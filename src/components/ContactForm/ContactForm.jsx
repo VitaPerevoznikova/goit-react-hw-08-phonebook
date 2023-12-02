@@ -1,74 +1,92 @@
-import { useDispatch } from 'react-redux';
-import { Formik } from 'formik';
-import 'yup-phone';
-import { schema } from 'shared/schemaYup';
-// redux
-import { addContact } from 'redux/contacts/contacts-operations';
 
-import { BsFillTelephoneFill, BsPersonFill } from 'react-icons/bs';
-import { IoMdPersonAdd } from 'react-icons/io';
-
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Forms } from './ContactForm.styled';
 import {
-  Form,
-  FormField,
-  FieldFormik,
-  ErrorMessage,
-  StyledButton,
-  LabelWrapper,
-  LabelSpan,
-} from './ContactForm.styled';
-
-const initialValues = { avatar: '', name: '', phone: '' };
+  ButtonStyle,
+  Container,
+  InputStyle,
+  Label,
+} from 'components/App.styled';
+import { addContacts } from 'redux/contacts/operations';
+import { selectContacts } from 'redux/contacts/selectors';
+import { Filter } from 'components/Filter/Filter';
 
 export const ContactForm = () => {
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
   const dispatch = useDispatch();
+  const contacts = useSelector(selectContacts);
 
-  const onAddContact = data => {
-    dispatch(addContact(data));
+  const onSubmitAddContact = event => {
+    event.preventDefault();
+    const newObj = { name, number };
+
+    if (isNameNew(contacts, newObj) !== undefined) {
+      alert(`${newObj.name} is already in contacts`);
+      return;
+    }
+
+    dispatch(addContacts(newObj));
+
+    reset();
   };
+
+  const isNameNew = (contacts, newObj) => {
+    return contacts.find(
+      ({ name }) => name.toLowerCase() === newObj.name.toLowerCase()
+    );
+  };
+
+  const onChangeInput = event => {
+    const { name, value } = event.currentTarget;
+    switch (name) {
+      case 'name':
+        setName(value);
+        break;
+      case 'number':
+        setNumber(value);
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const reset = () => {
+    setName('');
+    setNumber('');
+  };
+
   return (
-    <Formik
-      initialValues={initialValues}
-      onSubmit={(values, { resetForm }) => {
-        onAddContact({ ...values });
-        resetForm();
-      }}
-      validationSchema={schema}
-    >
-      <Form autoComplete="off">
-        <FormField>
-          <LabelWrapper>
-            <BsPersonFill />
-            <LabelSpan>Avatar</LabelSpan>
-          </LabelWrapper>
-          <FieldFormik name="avatar" placeholder="Add link to avatar" />
-          <ErrorMessage name="avatar" component="span" />
-        </FormField>
-        <FormField>
-          <LabelWrapper>
-            <BsPersonFill />
-            <LabelSpan>Name</LabelSpan>
-          </LabelWrapper>
-          <FieldFormik type="text" name="name" placeholder="Name" />
-          <ErrorMessage name="name" component="span" />
-        </FormField>
-        <FormField>
-          <LabelWrapper>
-            <BsFillTelephoneFill />
-            <LabelSpan>Number</LabelSpan>
-          </LabelWrapper>
-          <FieldFormik
-            type="tel"
-            name="phone"
-            placeholder="+38-050-123-45-67"
+    <Container>
+      <Forms onSubmit={onSubmitAddContact}>
+        <Label>
+          Name
+          <InputStyle
+            type="text"
+            name="name"
+            value={name}
+            pattern="^[a-zA-Zа-яА-Я]+(([' \-][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+            required
+            onChange={onChangeInput}
           />
-          <ErrorMessage name="phone" component="span" />
-        </FormField>
-        <StyledButton type="submit">
-          <IoMdPersonAdd size="16" />
-          Add contact
-        </StyledButton>
-      </Form>
-    </Formik>
+        </Label>
+        <Label>
+          Phone number
+          <InputStyle
+            type="tel"
+            name="number"
+            value={number}
+            pattern="\+?\d{1,4}?[ .\-\s]?\(?\d{1,3}?\)?[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,9}"
+            required
+            onChange={onChangeInput}
+          />
+        </Label>
+        <ButtonStyle type="submit">Add contact</ButtonStyle>
+      </Forms>{' '}
+      <Filter />
+    </Container>
   );
 };
+

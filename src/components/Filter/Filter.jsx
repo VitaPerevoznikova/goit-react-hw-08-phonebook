@@ -1,30 +1,28 @@
+import { Label, InputStyle, TitleStyle } from 'components/App.styled';
 import { useDispatch, useSelector } from 'react-redux';
-import { setFilter } from 'redux/filter/filter-slice';
-import { selectFilter } from 'redux/selectors';
-
-import { BsSearch } from 'react-icons/bs';
-import { LabelWrapper, Input, LabelDescr, LabelSpan } from './Filter.styled';
+import { filterSet } from 'redux/filter/filterSlice';
+import { selectFilter } from 'redux/filter/selectors';
 
 export const Filter = () => {
-  const filter = useSelector(selectFilter);
   const dispatch = useDispatch();
+  const filterPhoneBook = useSelector(selectFilter);
 
-  const changeFilter = e => {
-    dispatch(setFilter(e.target.value.toLowerCase().trim()));
+  const onChangeFilter = event => {
+    const { value } = event.currentTarget;
+    dispatch(filterSet(value));
   };
 
   return (
-    <LabelDescr>
-      <LabelWrapper>
-        <BsSearch size="16" />
-        <LabelSpan>Find contacts by name</LabelSpan>
-      </LabelWrapper>
-      <Input
+    <Label>
+     <TitleStyle>Find contacts by name:</TitleStyle> 
+      <InputStyle
         type="text"
-        value={filter}
-        onChange={changeFilter}
-        placeholder="Search..."
+        name="filter"
+        value={filterPhoneBook}
+        title="Enter the name"
+        required
+        onChange={onChangeFilter}
       />
-    </LabelDescr>
+    </Label>
   );
 };
